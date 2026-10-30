@@ -1,0 +1,13 @@
+BEST FIRST SEARCH - NHOM 3
+TTD: A | TTKT: B
+
+Buoc | Mo rong | Ke | OPEN
+0 | - | - | [A(20)]
+1 | A | C(15), D(6), E(7) | [D(6), E(7), C(15)]
+2 | D | F(10), I(8) | [E(7), I(8), F(10), C(15)]
+3 | E | K(12), G(5) | [G(5), I(8), F(10), K(12), C(15)]
+4 | G | B(0), H(3) | [B(0), H(3), I(8), F(10), K(12), C(15)]
+5 | B | TTKT - dừng | [H(3), I(8), F(10), K(12), C(15)]
+
+Trang thai: DA TIM THAY
+Duong di: A -> E -> G -> B

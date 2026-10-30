@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nhóm 3 - Best First Search</title>
+<style>
+:root{--bg:#f4f7fb;--panel:#fff;--text:#182230;--muted:#6b7280;--line:#dbe3ee;--accent:#2563eb;--accent2:#0f766e;--good:#16a34a;--warn:#f59e0b;--bad:#dc2626;--shadow:0 10px 30px rgba(15,23,42,.08)}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;background:linear-gradient(135deg,#eef6ff,#f7f8fc 55%,#eefcf8);color:var(--text)}
+.app{max-width:1500px;margin:auto;padding:22px}.top{display:flex;justify-content:space-between;gap:18px;align-items:center;margin-bottom:16px}.brand h1{margin:0;font-size:26px}.brand p{margin:5px 0 0;color:var(--muted)}
+.badge{background:#e8f0ff;color:#1d4ed8;padding:8px 12px;border-radius:999px;font-weight:700;font-size:13px}
+.grid{display:grid;grid-template-columns:minmax(520px,1.35fr) minmax(430px,1fr);gap:16px}.panel{background:rgba(255,255,255,.95);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);overflow:hidden}.panel h2{font-size:16px;margin:0;padding:16px 18px;border-bottom:1px solid var(--line)}
+.graph-wrap{height:560px;position:relative;background:radial-gradient(circle at 50% 40%,#fff 0,#f8fbff 70%);overflow:hidden}.graph-wrap svg{width:100%;height:100%}.edge{stroke:#94a3b8;stroke-width:2;fill:none}.edge.path{stroke:var(--good);stroke-width:5}.node circle{fill:#fff;stroke:#64748b;stroke-width:2.5;filter:drop-shadow(0 4px 5px rgba(15,23,42,.10))}.node text{font-weight:800;font-size:16px;text-anchor:middle;dominant-baseline:middle}.node .h{font-size:11px;fill:#64748b;font-weight:700}.node.current circle{fill:#dbeafe;stroke:#2563eb;stroke-width:4}.node.queued circle{fill:#fef3c7;stroke:#d97706}.node.done circle{fill:#dcfce7;stroke:#16a34a}.node.goal circle{fill:#fee2e2;stroke:#dc2626;stroke-width:4}.node.path circle{fill:#dcfce7;stroke:#16a34a;stroke-width:4}
+.side{display:flex;flex-direction:column;min-height:560px}.status{padding:15px 18px;border-bottom:1px solid var(--line);display:flex;gap:10px;flex-wrap:wrap}.chip{padding:7px 10px;border-radius:10px;background:#f1f5f9;font-size:13px}.chip strong{margin-left:4px}.explain{padding:16px 18px;background:#f8fafc;border-bottom:1px solid var(--line);min-height:145px}.explain .step-title{font-weight:800;margin-bottom:8px}.explain p{margin:5px 0;color:#475569;line-height:1.55}.queue{padding:15px 18px;border-bottom:1px solid var(--line)}.queue-title{font-weight:800;margin-bottom:10px}.qbox{display:flex;gap:7px;flex-wrap:wrap}.qitem{padding:8px 12px;background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;border-radius:9px;font-weight:800}.empty{color:#94a3b8}
+.controls{display:flex;gap:9px;padding:15px 18px;border-bottom:1px solid var(--line);flex-wrap:wrap}.btn{border:0;border-radius:10px;padding:10px 14px;font-weight:800;cursor:pointer;background:#e2e8f0;color:#1e293b}.btn.primary{background:#2563eb;color:#fff}.btn.green{background:#0f766e;color:#fff}.btn:disabled{opacity:.45;cursor:not-allowed}.speed{margin-left:auto;display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted)}select,input{border:1px solid #cbd5e1;border-radius:9px;padding:9px;background:#fff;color:var(--text)}
+.io{padding:15px 18px;display:grid;grid-template-columns:1fr 1fr;gap:12px}.io textarea{width:100%;height:125px;resize:vertical;border:1px solid #cbd5e1;border-radius:10px;padding:10px;font-family:Consolas,monospace;font-size:13px}.io label{display:block;font-weight:800;font-size:13px;margin-bottom:7px}.io .full{grid-column:1/-1}.notice{font-size:12px;color:#64748b;margin-top:7px}
+.table-panel{margin-top:16px}.table-scroll{max-height:320px;overflow:auto}table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:11px 12px;border-bottom:1px solid #e5e7eb;text-align:left}th{position:sticky;top:0;background:#f8fafc;z-index:1}.active-row{background:#eff6ff}.mono{font-family:Consolas,monospace}.result{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:15px 18px;background:#f0fdf4;border-top:1px solid #bbf7d0}.result strong{color:#166534}.path-text{font-weight:900;color:#166534;font-size:16px}.legend{padding:12px 18px;color:#64748b;font-size:12px}.legend span{margin-right:15px}.dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;border:1px solid #94a3b8}.dblue{background:#dbeafe}.dyellow{background:#fef3c7}.dgreen{background:#dcfce7}.dred{background:#fee2e2}
+@media(max-width:1050px){.grid{grid-template-columns:1fr}.graph-wrap,.side{min-height:500px;height:500px}.io{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top"><div class="brand"><h1>Nhóm 3</h1><p>Trực quan hóa thuật toán Best-First Search theo danh sách OPEN ưu tiên h(n) tăng dần.</p></div><div class="badge">NHÓM 03 · BEST-FIRST SEARCH</div></div>
+  <div class="grid">
+    <section class="panel"><h2>ĐỒ THỊ TRẠNG THÁI</h2><div class="graph-wrap"><svg id="graph" viewBox="0 0 760 560" preserveAspectRatio="xMidYMid meet"></svg></div><div class="legend"><span><i class="dot dblue"></i>Đang phát triển</span><span><i class="dot dyellow"></i>Đang chờ trong OPEN</span><span><i class="dot dgreen"></i>Đã xử lý / đường đi</span><span><i class="dot dred"></i>TTKT</span></div></section>
+    <section class="panel side">
+      <h2>QUÁ TRÌNH BEST-FIRST SEARCH</h2>
+      <div class="status"><div class="chip">TTĐ<strong id="startChip">A</strong></div><div class="chip">TTKT<strong id="goalChip">B</strong></div><div class="chip">Bước<strong id="stepChip">0 / 0</strong></div><div class="chip">Độ dài<strong id="lengthChip">—</strong></div></div>
+      <div class="explain" id="explain"><div class="step-title">Sẵn sàng</div><p>Nhấn <b>Bắt đầu</b> để khởi tạo OPEN = [TTĐ], hoặc <b>Bước tiếp</b> để chạy từng bước.</p></div>
+      <div class="queue"><div class="queue-title">Danh sách OPEN (Ưu tiên h(n) nhỏ nhất)</div><div class="qbox" id="queueBox"><span class="empty">Chưa khởi tạo</span></div></div>
+      <div class="controls"><button class="btn primary" id="startBtn">▶ Bắt đầu</button><button class="btn green" id="nextBtn">⏭ Bước tiếp</button><button class="btn" id="autoBtn">▶▶ Chạy tự động</button><button class="btn" id="resetBtn">↻ Đặt lại</button><div class="speed">Tốc độ <select id="speed"><option value="1400">Chậm</option><option value="800" selected>Vừa</option><option value="400">Nhanh</option></select></div></div>
+      <div class="io"><div><label>Input đồ thị</label><textarea id="inputText"></textarea><div class="notice">Dạng: A(20): C, D, E · TTD: A · TTKT: B · Số trong ngoặc là h(n)</div></div><div><label>Trạng thái</label><div id="stateBox" style="border:1px solid #cbd5e1;border-radius:10px;padding:10px;height:125px;overflow:auto;font-family:Consolas,monospace;font-size:13px;background:#fff"></div></div><div class="full">
+  <button class="btn primary" id="applyBtn">↻ Áp dụng input & vẽ lại</button>
+  <label class="btn" for="fileInput" style="display:inline-flex;align-items:center;cursor:pointer">📂 Import input.txt</label>
+  <input id="fileInput" type="file" accept=".txt,text/plain" style="display:none">
+  <span id="fileName" class="notice" style="display:inline-block;margin-left:8px">Chưa chọn file</span>
+</div></div>
+    </section>
+  </div>
+  <section class="panel table-panel"><h2>BẢNG CÁC BƯỚC THỰC HIỆN THUẬT TOÁN</h2><div class="table-scroll"><table><thead><tr><th>#</th><th>Phát triển TT</th><th>Trạng thái kề</th><th>Danh sách OPEN (h tăng dần)</th></tr></thead><tbody id="tableBody"></tbody></table></div><div class="result"><div><strong>Kết quả</strong><div class="path-text" id="pathText">Chưa chạy</div></div><div class="chip">Số cạnh <strong id="resultLength">—</strong></div></div></section>
+</div>
+<script>
+const defaultInput = `A(20): C, D, E\nC(15): F\nD(6): F, I\nE(7): K, G\nF(10): B\nK(12):\nI(8): B, G\nB(0):\nG(5): B, H\nH(3): B\n\nTTD: A\nTTKT: B`;
+const inputText=document.getElementById('inputText'); inputText.value=defaultInput;
+const graph=document.getElementById('graph'), tableBody=document.getElementById('tableBody'), queueBox=document.getElementById('queueBox');
+const explain=document.getElementById('explain'), stateBox=document.getElementById('stateBox');
+let model={nodes:[],edges:[],start:'',goal:'',h:{},adj:{}}, sim=null, timer=null;
+
+function trim(s){return s.trim().replace(/;$/,'').trim()}
+
+function parse(text){
+  const edges=[], nodes=new Set(), adj={}, h={};
+  let start='', goal='';
+  for(const raw of text.split(/\r?\n/)){
+    const s=raw.trim();
+    if(!s || s.startsWith('#')) continue;
+    const p=s.indexOf(':');
+    if(p<0) continue;
+    const left=trim(s.slice(0,p)), right=trim(s.slice(p+1));
+    if(/^TTD$/i.test(left)){start=right;continue}
+    if(/^TTKT$/i.test(left)){goal=right;continue}
+    const m=left.match(/^(.+?)\s*\(\s*(-?\d+(?:\.\d+)?)\s*\)$/);
+    const key=m?trim(m[1]):left;
+    const hv=m?Number(m[2]):null;
+    nodes.add(key);
+    if(hv!==null) h[key]=hv;
+    else if(h[key]===undefined) h[key]=0;
+    adj[key]=adj[key]||[];
+    if(right){
+      for(const t of right.split(',')){
+        const vRaw=trim(t);
+        if(!vRaw) continue;
+        const vm=vRaw.match(/^(.+?)\s*\(\s*(-?\d+(?:\.\d+)?)\s*\)$/);
+        const v=vm?trim(vm[1]):vRaw;
+        const vhv=vm?Number(vm[2]):null;
+        nodes.add(v);
+        if(vhv!==null) h[v]=vhv;
+        else if(h[v]===undefined) h[v]=0;
+        adj[v]=adj[v]||[];
+        adj[key].push(v);
+        edges.push([key,v]);
+      }
+    }
+  }
+  if(start){nodes.add(start);if(h[start]===undefined)h[start]=0;adj[start]=adj[start]||[]}
+  if(goal){nodes.add(goal);if(h[goal]===undefined)h[goal]=0;adj[goal]=adj[goal]||[]}
+  return {nodes:[...nodes],edges,start,goal,adj,h};
+}
+
+function sortOpen(arr){
+  return [...arr].sort((a,b)=>(model.h[a]??0)-(model.h[b]??0)||a.localeCompare(b));
+}
+
+function fmtNode(n){
+  return `${n}(${model.h[n]??0})`;
+}
+
+function makeModel(){
+  model=parse(inputText.value);
+  if(!model.start) model.start=model.nodes[0]||'';
+  if(!model.goal) model.goal='';
+  document.getElementById('startChip').textContent=model.start||'—';
+  document.getElementById('goalChip').textContent=model.goal||'—';
+  draw();
+  reset();
+}
+
+function computePositions(){
+  const defaults={
+    A:{x:380,y:65},
+    C:{x:170,y:175}, D:{x:365,y:175}, E:{x:555,y:175},
+    F:{x:135,y:320}, I:{x:340,y:320}, G:{x:515,y:320}, K:{x:665,y:305},
+    B:{x:255,y:475}, H:{x:485,y:475}
+  };
+  if(model.nodes.length && model.nodes.every(n=>defaults[n])) return defaults;
+  const level={}, by={};
+  const q=model.start?[model.start]:[];
+  if(model.start) level[model.start]=0;
+  while(q.length){
+    const u=q.shift();
+    for(const v of (model.adj[u]||[])){
+      if(level[v]===undefined){level[v]=level[u]+1;q.push(v)}
+    }
+  }
+  for(const n of model.nodes) if(level[n]===undefined) level[n]=0;
+  for(const n of model.nodes) (by[level[n]]??=[]).push(n);
+  const max=Math.max(...Object.keys(by).map(Number),0), pos={};
+  for(let l=0;l<=max;l++){
+    const arr=by[l]||[];
+    const x=90+l*(620/Math.max(max,1));
+    const step=470/Math.max(arr.length,1);
+    arr.forEach((n,i)=>pos[n]={x:Math.min(690,Math.max(70,x)),y:70+i*step+((l%2)*10),level:l});
+  }
+  return pos;
+}
+
+function draw(){
+  graph.innerHTML='';
+  const pos=computePositions();
+  const defs=document.createElementNS('http://www.w3.org/2000/svg','defs');
+  const marker=document.createElementNS('http://www.w3.org/2000/svg','marker');
+  marker.setAttribute('id','arrow');
+  marker.setAttribute('markerWidth','9');
+  marker.setAttribute('markerHeight','9');
+  marker.setAttribute('refX','8');
+  marker.setAttribute('refY','3');
+  marker.setAttribute('orient','auto');
+  const path=document.createElementNS('http://www.w3.org/2000/svg','path');
+  path.setAttribute('d','M0,0 L0,6 L9,3 z');
+  path.setAttribute('fill','#94a3b8');
+  marker.appendChild(path);
+  defs.appendChild(marker);
+  graph.appendChild(defs);
+
+  const pathEdges=new Set();
+  if(sim?.path){
+    for(let i=0;i<sim.path.length-1;i++) pathEdges.add(sim.path[i]+'→'+sim.path[i+1]);
+  }
+  for(const [a,b] of model.edges){
+    const pa=pos[a], pb=pos[b];
+    if(!pa||!pb) continue;
+    const dx=pb.x-pa.x, dy=pb.y-pa.y, len=Math.hypot(dx,dy)||1, ux=dx/len, uy=dy/len;
+    const line=document.createElementNS('http://www.w3.org/2000/svg','line');
+    line.setAttribute('x1',pa.x+ux*28);
+    line.setAttribute('y1',pa.y+uy*28);
+    line.setAttribute('x2',pb.x-ux*30);
+    line.setAttribute('y2',pb.y-uy*30);
+    line.setAttribute('class','edge'+(pathEdges.has(a+'→'+b)?' path':''));
+    line.setAttribute('marker-end','url(#arrow)');
+    graph.appendChild(line);
+  }
+  for(const n of model.nodes){
+    const p=pos[n], g=document.createElementNS('http://www.w3.org/2000/svg','g');
+    let cls='node';
+    if(sim){
+      if(n===model.goal) cls+=' goal';
+      if(sim.done.has(n)) cls+=' done';
+      if(sim.queue.includes(n)) cls+=' queued';
+      if(n===sim.current) cls+=' current';
+      if(sim.path?.includes(n)) cls+=' path';
+    }
+    g.setAttribute('class',cls);
+    const c=document.createElementNS('http://www.w3.org/2000/svg','circle');
+    c.setAttribute('cx',p.x);
+    c.setAttribute('cy',p.y);
+    c.setAttribute('r','28');
+    g.appendChild(c);
+    const t=document.createElementNS('http://www.w3.org/2000/svg','text');
+    t.setAttribute('x',p.x);
+    t.setAttribute('y',p.y-2);
+    t.textContent=n;
+    g.appendChild(t);
+    const h=document.createElementNS('http://www.w3.org/2000/svg','text');
+    h.setAttribute('x',p.x);
+    h.setAttribute('y',p.y+43);
+    h.setAttribute('class','h');
+    h.textContent='h='+(model.h[n]??0);
+    g.appendChild(h);
+    graph.appendChild(g);
+  }
+}
+
+function reset(){
+  clearInterval(timer);
+  timer=null;
+  sim={queue:[],current:null,done:new Set(),seen:new Set(),parent:{},path:null,step:0,rows:[],status:'ready'};
+  render();
+}
+
+function init(){
+  clearInterval(timer);
+  timer=null;
+  const open=model.start?[model.start]:[];
+  sim={
+    queue:open,
+    current:null,
+    done:new Set(),
+    seen:new Set(open),
+    parent:{[model.start]:model.start},
+    path:null,
+    step:0,
+    rows:[{n:'',k:'',l:open.map(fmtNode)}],
+    status:'running'
+  };
+  render();
+}
+
+function next(){
+  if(!sim||sim.status==='ready') init();
+  if(sim.status!=='running') return;
+  if(!sim.queue.length){sim.status='failed';render();return}
+  sim.queue=sortOpen(sim.queue);
+  const u=sim.queue.shift();
+  sim.current=u;
+  if(u===model.goal){
+    sim.step++;
+    sim.rows.push({n:u,k:'TTKT - dừng',l:sim.queue.map(fmtNode)});
+    sim.status='found';
+    buildPath();
+    render();
+    return;
+  }
+  const neigh=model.adj[u]||[];
+  for(const v of neigh){
+    if(!sim.seen.has(v)){
+      sim.seen.add(v);
+      sim.parent[v]=u;
+      sim.queue.push(v);
+    }
+  }
+  sim.queue=sortOpen(sim.queue);
+  sim.done.add(u);
+  sim.step++;
+  sim.rows.push({
+    n:u,
+    k:neigh.length?neigh.map(fmtNode).join(', '):'-',
+    l:sim.queue.map(fmtNode)
+  });
+  render();
+}
+
+function buildPath(){
+  const p=[];
+  let v=model.goal;
+  if(sim.parent[v]===undefined){sim.path=[];return}
+  while(true){
+    p.push(v);
+    if(v===model.start) break;
+    v=sim.parent[v];
+    if(v===undefined){sim.path=[];break}
+  }
+  sim.path=p.reverse();
+}
+
+function auto(){
+  if(sim.status==='ready') init();
+  clearInterval(timer);
+  timer=setInterval(()=>{
+    if(sim.status!=='running'){clearInterval(timer);timer=null;return}
+    next();
+  },Number(document.getElementById('speed').value));
+}
+
+function render(){
+  const total=Math.max(0,sim.rows.length-1);
+  document.getElementById('stepChip').textContent=`${sim.step} / ${total}`;
+  document.getElementById('lengthChip').textContent=sim.path?sim.path.length-1:'—';
+  document.getElementById('resultLength').textContent=sim.path?sim.path.length-1:'—';
+  document.getElementById('pathText').textContent=sim.path?sim.path.join(' → '):(sim.status==='failed'?'Không tìm thấy đường đi':'Chưa chạy');
+  queueBox.innerHTML=sim.queue.length?sim.queue.map(x=>`<span class="qitem">${fmtNode(x)}</span>`).join(''):'<span class="empty">OPEN đang rỗng</span>';
+
+  let title='Sẵn sàng', body='Nhấn <b>Bắt đầu</b> để khởi tạo OPEN = [TTĐ], hoặc <b>Bước tiếp</b> để chạy từng bước.';
+  if(sim.status==='running' && !sim.current){
+    title='Bước 0: Khởi tạo OPEN';
+    body=`Đưa trạng thái đầu <b>${fmtNode(model.start)}</b> vào danh sách OPEN.`;
+  } else if(sim.status==='running' && sim.current){
+    const ns=model.adj[sim.current]||[];
+    title=`Đang phát triển: ${fmtNode(sim.current)}`;
+    body=`Các trạng thái kề: <b>${ns.length?ns.map(fmtNode).join(', '):'-'}</b><br>Trạng thái chưa xuất hiện được thêm vào <b>OPEN</b> và sắp xếp theo <b>h(n) tăng dần</b>.`;
+  } else if(sim.status==='found'){
+    title='🎯 Đã tìm thấy TTKT';
+    body=`<b>${fmtNode(model.goal)}</b> có h nhỏ nhất và đã được lấy ra khỏi đầu OPEN. Truy vết parent để thu được đường đi.`;
+  } else if(sim.status==='failed'){
+    title='Không tìm thấy đường';
+    body='Danh sách OPEN đã rỗng trước khi gặp trạng thái kết thúc.';
+  }
+  explain.innerHTML=`<div class="step-title">${title}</div><p>${body}</p>`;
+
+  tableBody.innerHTML=sim.rows.map((r,i)=>`<tr class="${i===sim.rows.length-1?'active-row':''}"><td>${i}</td><td>${r.n||'—'}</td><td>${r.k||'—'}</td><td class="mono">[${r.l.join(', ')}]</td></tr>`).join('');
+  stateBox.textContent=`status = ${sim.status}\ncurrent = ${sim.current?fmtNode(sim.current):'—'}\nOPEN = [${sim.queue.map(fmtNode).join(', ')}]\n\nparent:\n${Object.entries(sim.parent).map(([k,v])=>k+' ← '+v).join('\n')}`;
+  draw();
+}
+
+const fileInput=document.getElementById('fileInput');
+const fileName=document.getElementById('fileName');
+
+fileInput.addEventListener('change', async (e)=>{
+  const file=e.target.files && e.target.files[0];
+  if(!file) return;
+  if(!/\.txt$/i.test(file.name) && file.type && file.type!=='text/plain'){
+    fileName.textContent='Vui lòng chọn file .txt';
+    return;
+  }
+  try{
+    const text=await file.text();
+    inputText.value=text;
+    fileName.textContent='Đã import: '+file.name;
+    makeModel();
+  }catch(err){
+    fileName.textContent='Không đọc được file';
+    console.error(err);
+  }
+});
+
+document.getElementById('startBtn').onclick=()=>{init();render()};
+document.getElementById('nextBtn').onclick=()=>{next()};
+document.getElementById('autoBtn').onclick=()=>auto();
+document.getElementById('resetBtn').onclick=()=>reset();
+document.getElementById('applyBtn').onclick=()=>makeModel();
+makeModel();
+</script>
+</body></html>

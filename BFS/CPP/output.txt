@@ -1,0 +1,15 @@
+BREADTH-FIRST SEARCH - NHOM 3
+============================================
+TTD: A
+TTKT: G
+
+L = [A]
+1. A | ke: B, C, D | L = [B, C, D]
+2. B | ke: I, G | L = [C, D, I, G]
+3. C | ke: E, F | L = [D, I, G, E, F]
+4. D | ke: C, F | L = [I, G, E, F]
+5. I | ke: G | L = [G, E, F]
+6. G -> TTKT, dung
+
+Duong di: A -> B -> G
+Do dai: 2

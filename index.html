@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nhóm 3 — Đồ Án Trí Tuệ Nhân Tạo</title>
+  <style>
+    :root {
+      --bg: #f4f7fb;
+      --panel: #ffffff;
+      --text: #182230;
+      --muted: #64748b;
+      --line: #dbe3ee;
+      --accent: #2563eb;
+      --accent-soft: #eff6ff;
+      --green: #0f766e;
+      --green-soft: #f0fdfa;
+      --purple: #6d28d9;
+      --purple-soft: #f5f3ff;
+      --shadow: 0 12px 32px rgba(15, 23, 42, .08);
+    }
+
+    * {
+      box-sizing: border-box
+    }
+
+    body {
+      margin: 0;
+      font-family: Inter, Segoe UI, Arial, sans-serif;
+      background: linear-gradient(135deg, #eef6ff, #f7f8fc 55%, #eefcf8);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .header {
+      background: rgba(255, 255, 255, .92);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--line);
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      position: sticky;
+      top: 0;
+      z-index: 20;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px
+    }
+
+    .logo {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #2563eb, #0f766e);
+      color: #fff;
+      font-weight: 900;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 6px 16px rgba(37, 99, 235, .25);
+    }
+
+    .brand-text h1 {
+      margin: 0;
+      font-size: 20px;
+      letter-spacing: -.2px
+    }
+
+    .brand-text p {
+      margin: 3px 0 0;
+      font-size: 13px;
+      color: var(--muted)
+    }
+
+    .nav-tabs {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      background: #f1f5f9;
+      padding: 5px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+    }
+
+    .tab-btn {
+      border: 0;
+      background: transparent;
+      color: #475569;
+      font-weight: 700;
+      font-size: 13px;
+      padding: 9px 15px;
+      border-radius: 9px;
+      cursor: pointer;
+      transition: all .18s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .tab-btn:hover {
+      color: var(--text);
+      background: rgba(255, 255, 255, .6)
+    }
+
+    .tab-btn.active {
+      background: #fff;
+      color: var(--accent);
+      box-shadow: 0 2px 8px rgba(15, 23, 42, .08);
+    }
+
+    .tab-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      display: inline-block
+    }
+
+    .dot-bfs {
+      background: #2563eb
+    }
+
+    .dot-bf {
+      background: #0f766e
+    }
+
+    .dot-astar {
+      background: #6d28d9
+    }
+
+    .container {
+      max-width: 1460px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 28px 22px;
+      flex: 1;
+    }
+
+    .hero {
+      background: linear-gradient(135deg, #1e3a8a, #1d4ed8 55%, #0f766e);
+      color: #fff;
+      border-radius: 22px;
+      padding: 32px 36px;
+      margin-bottom: 24px;
+      box-shadow: var(--shadow);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+
+    .hero h2 {
+      margin: 0 0 8px;
+      font-size: 28px
+    }
+
+    .hero p {
+      margin: 0;
+      color: #dbeafe;
+      line-height: 1.6;
+      max-width: 760px;
+      font-size: 14.5px
+    }
+
+    .hero-badges {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap
+    }
+
+    .hero-badge {
+      background: rgba(255, 255, 255, .15);
+      border: 1px solid rgba(255, 255, 255, .25);
+      padding: 10px 16px;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 700;
+      backdrop-filter: blur(4px);
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 24px;
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 18px 38px rgba(15, 23, 42, .12);
+      border-color: #93c5fd;
+    }
+
+    .card-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 800;
+      padding: 6px 11px;
+      border-radius: 999px;
+      width: fit-content;
+      margin-bottom: 14px;
+    }
+
+    .tag-bfs {
+      background: var(--accent-soft);
+      color: var(--accent)
+    }
+
+    .tag-bf {
+      background: var(--green-soft);
+      color: var(--green)
+    }
+
+    .tag-astar {
+      background: var(--purple-soft);
+      color: var(--purple)
+    }
+
+    .card h3 {
+      margin: 0 0 8px;
+      font-size: 21px
+    }
+
+    .card .desc {
+      color: #475569;
+      font-size: 14px;
+      line-height: 1.6;
+      margin: 0 0 18px
+    }
+
+    .meta-box {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 12px 14px;
+      margin-bottom: 20px;
+      font-size: 13px;
+    }
+
+    .meta-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 5px 0;
+      border-bottom: 1px dashed #e2e8f0;
+    }
+
+    .meta-row:last-child {
+      border-bottom: 0
+    }
+
+    .meta-row span {
+      color: var(--muted)
+    }
+
+    .meta-row strong {
+      font-family: Consolas, monospace;
+      color: var(--text)
+    }
+
+    .card-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn {
+      flex: 1;
+      border: 0;
+      border-radius: 11px;
+      padding: 11px 14px;
+      font-weight: 800;
+      font-size: 13.5px;
+      cursor: pointer;
+      text-decoration: none;
+      text-align: center;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: opacity .15s ease, transform .1s ease;
+    }
+
+    .btn:hover {
+      opacity: .92
+    }
+
+    .btn:active {
+      transform: scale(.98)
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #fff
+    }
+
+    .btn-green {
+      background: var(--green);
+      color: #fff
+    }
+
+    .btn-purple {
+      background: var(--purple);
+      color: #fff
+    }
+
+    .btn-outline {
+      background: #f1f5f9;
+      color: #1e293b;
+      border: 1px solid #cbd5e1;
+      flex: 0 0 auto;
+    }
+
+    .viewer-wrap {
+      display: none;
+      flex-direction: column;
+      height: calc(100vh - 73px);
+      width: 100%;
+      background: #fff;
+    }
+
+    .viewer-wrap.active {
+      display: flex
+    }
+
+    .viewer-bar {
+      background: #f8fafc;
+      border-bottom: 1px solid var(--line);
+      padding: 8px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+    }
+
+    .viewer-bar .path {
+      font-family: Consolas, monospace;
+      color: #475569;
+      background: #e2e8f0;
+      padding: 4px 10px;
+      border-radius: 6px;
+    }
+
+    .viewer-frame {
+      flex: 1;
+      width: 100%;
+      border: 0;
+      background: #f4f7fb;
+    }
+
+    @media(max-width:1020px) {
+      .cards {
+        grid-template-columns: 1fr
+      }
+
+      .header {
+        flex-direction: column;
+        align-items: flex-start
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <header class="header">
+    <div class="brand">
+      <div class="logo">N03</div>
+      <div class="brand-text">
+        <h1>NHÓM 03 · ĐỒ ÁN TRÍ TUỆ NHÂN TẠO</h1>
+        <p>Hệ thống mô phỏng và trực quan hóa các thuật toán tìm kiếm trên đồ thị</p>
+      </div>
+    </div>
+    <nav class="nav-tabs">
+      <button class="tab-btn active" onclick="switchView('home')" id="tab-home">🏠 Trang chủ (Tổng quan)</button>
+      <button class="tab-btn" onclick="switchView('bfs')" id="tab-bfs"><i class="tab-dot dot-bfs"></i>1. Thuật toán
+        BFS</button>
+      <button class="tab-btn" onclick="switchView('bestfirst')" id="tab-bestfirst"><i class="tab-dot dot-bf"></i>2.
+        Best-First Search</button>
+      <button class="tab-btn" onclick="switchView('astar')" id="tab-astar"><i class="tab-dot dot-astar"></i>3. Thuật
+        toán A*</button>
+    </nav>
+  </header>
+
+  <main class="container" id="homeView">
+    <section class="hero">
+      <div>
+        <h2>Trực quan hóa thuật toán tìm kiếm AI</h2>
+        <p>Chọn một trong ba bài tập bên dưới để chạy mô phỏng trực tiếp ngay trên giao diện này hoặc mở trong tab
+          riêng. Mỗi bài tập đều hỗ trợ nhập đồ thị tùy chỉnh, import file <code>input.txt</code>, chạy từng bước và xem
+          bảng trạng thái chi tiết.</p>
+      </div>
+      <div class="hero-badges">
+        <div class="hero-badge">⚡ C++11 STL</div>
+        <div class="hero-badge">🎨 HTML5 / SVG Visualizer</div>
+        <div class="hero-badge">📂 Import input.txt</div>
+      </div>
+    </section>
+
+    <section class="cards">
+      <!-- Card 1: BFS -->
+      <article class="card">
+        <div>
+          <div class="card-tag tag-bfs">BÀI TẬP 1</div>
+          <h3>Breadth-First Search (BFS)</h3>
+          <p class="desc">Tìm kiếm theo chiều rộng sử dụng hàng đợi <b>Queue (FIFO)</b>, duyệt các trạng thái theo từng
+            mức độ sâu để tìm đường đi ngắn nhất theo số cạnh.</p>
+          <div class="meta-box">
+            <div class="meta-row"><span>Cấu trúc danh sách L</span><strong>Queue (FIFO)</strong></div>
+            <div class="meta-row"><span>Trạng thái đầu → đích</span><strong>A → G</strong></div>
+            <div class="meta-row"><span>Kết quả mẫu</span><strong>A → B → G (d = 2)</strong></div>
+            <div class="meta-row"><span>Thư mục mã nguồn</span><strong>BFS/</strong></div>
+          </div>
+        </div>
+        <div class="card-actions">
+          <button class="btn btn-primary" onclick="switchView('bfs')">▶ Mở mô phỏng BFS</button>
+          <a class="btn btn-outline" href="BFS/HTML/visualizer.html" target="_blank" title="Mở trong tab mới">↗ Tab
+            mới</a>
+        </div>
+      </article>
+
+      <!-- Card 2: Best First Search -->
+      <article class="card">
+        <div>
+          <div class="card-tag tag-bf">BÀI TẬP 2</div>
+          <h3>Best-First Search</h3>
+          <p class="desc">Tìm kiếm tốt nhất đầu tiên sử dụng hàm đánh giá heuristic <b>h(n)</b>, luôn ưu tiên mở rộng
+            đỉnh trong danh sách <b>OPEN</b> có <b>h(n)</b> nhỏ nhất.</p>
+          <div class="meta-box">
+            <div class="meta-row"><span>Hàm đánh giá ưu tiên</span><strong>h(n) tăng dần</strong></div>
+            <div class="meta-row"><span>Trạng thái đầu → đích</span><strong>A → B</strong></div>
+            <div class="meta-row"><span>Kết quả mẫu</span><strong>A → E → G → B</strong></div>
+            <div class="meta-row"><span>Thư mục mã nguồn</span><strong>BestFirstSearch/</strong></div>
+          </div>
+        </div>
+        <div class="card-actions">
+          <button class="btn btn-green" onclick="switchView('bestfirst')">▶ Mở Best-First</button>
+          <a class="btn btn-outline" href="BestFirstSearch/HTML/best_first.html" target="_blank"
+            title="Mở trong tab mới">↗ Tab mới</a>
+        </div>
+      </article>
+
+      <!-- Card 3: A* Search -->
+      <article class="card">
+        <div>
+          <div class="card-tag tag-astar">BÀI TẬP 3</div>
+          <h3>Thuật toán A* (A-Star)</h3>
+          <p class="desc">Kết hợp chi phí thực tế <b>g(n)</b> và ước lượng heuristic <b>h(n)</b> qua hàm <b>f(n) = g(n)
+              + h(n)</b> để tìm đường đi có tổng chi phí nhỏ nhất.</p>
+          <div class="meta-box">
+            <div class="meta-row"><span>Hàm đánh giá ưu tiên</span><strong>f(n) = g(n) + h(n)</strong></div>
+            <div class="meta-row"><span>Trạng thái đầu → đích</span><strong>A → B</strong></div>
+            <div class="meta-row"><span>Kết quả mẫu</span><strong>A → D → E → I → B (19)</strong></div>
+            <div class="meta-row"><span>Thư mục mã nguồn</span><strong>ASTAR/</strong></div>
+          </div>
+        </div>
+        <div class="card-actions">
+          <button class="btn btn-purple" onclick="switchView('astar')">▶ Mở mô phỏng A*</button>
+          <a class="btn btn-outline" href="ASTAR/HTML/astar.html" target="_blank" title="Mở trong tab mới">↗ Tab mới</a>
+        </div>
+      </article>
+    </section>
+  </main>
+
+  <section class="viewer-wrap" id="viewerWrap">
+    <div class="viewer-bar">
+      <div>Đang xem trực tiếp: <strong id="viewerTitle">—</strong> · <span class="path" id="viewerPath">—</span></div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <a class="btn btn-outline" id="viewerExternal" href="#" target="_blank"
+          style="padding:6px 12px;font-size:12px">↗ Mở toàn màn hình</a>
+        <button class="btn btn-outline" onclick="switchView('home')" style="padding:6px 12px;font-size:12px">← Quay lại
+          Trang chủ</button>
+      </div>
+    </div>
+    <iframe class="viewer-frame" id="viewerFrame" src="about:blank" title="Algorithm Visualizer"></iframe>
+  </section>
+
+  <script>
+    const routes = {
+      bfs: {
+        title: 'Thuật toán Tìm kiếm theo chiều rộng (BFS)',
+        url: 'BFS/HTML/visualizer.html'
+      },
+      bestfirst: {
+        title: 'Thuật toán Tìm kiếm tốt nhất đầu tiên (Best-First Search)',
+        url: 'BestFirstSearch/HTML/best_first.html'
+      },
+      astar: {
+        title: 'Thuật toán Tìm kiếm A* (A-Star Search)',
+        url: 'ASTAR/HTML/astar.html'
+      }
+    };
+
+    function switchView(view) {
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      const activeTab = document.getElementById('tab-' + view);
+      if (activeTab) activeTab.classList.add('active');
+
+      const homeView = document.getElementById('homeView');
+      const viewerWrap = document.getElementById('viewerWrap');
+      const frame = document.getElementById('viewerFrame');
+
+      if (view === 'home') {
+        homeView.style.display = 'block';
+        viewerWrap.classList.remove('active');
+        return;
+      }
+
+      const info = routes[view];
+      if (!info) return;
+
+      homeView.style.display = 'none';
+      viewerWrap.classList.add('active');
+      document.getElementById('viewerTitle').textContent = info.title;
+      document.getElementById('viewerPath').textContent = info.url;
+      document.getElementById('viewerExternal').href = info.url;
+      if (frame.getAttribute('src') !== info.url) {
+        frame.setAttribute('src', info.url);
+      }
+    }
+  </script>
+</body>
+
+</html>
